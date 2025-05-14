@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://cvjob-3a4ed.web.app", "https://cvjob-3a4ed.firebaseapp.com", "http://localhost:3000"],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Authorization", "Content-Length", "User-Agent", "x-goog-resumable"]
+  }
+] 

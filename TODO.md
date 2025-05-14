@@ -127,6 +127,7 @@
 - [x] Add manual fallback for both profile and job data entry
 - [x] Fix API endpoint 404 errors by moving logic to Firebase Functions
 - [x] Set OpenAI API key in Firebase Functions config
+- [x] Fix Firebase Storage CORS configuration for file uploads
 - [ ] Polish UI to match LinkedIn style (compact, sleek, consistent)
 - [ ] Deploy and test end-to-end workflow
 - [ ] Fix all error handling and edge cases
