@@ -83,11 +83,20 @@ export async function saveGeneratedDocuments(
  */
 export async function getUserDocumentHistory(userId: string) {
   try {
-    const documents = [];
-    
+    const documents: Array<{
+      id: string;
+      files: Array<{
+        type: string;
+        format: string;
+        url: string;
+      }>;
+      createdAt: any;
+      jobData: any;
+    }> = [];
+
     // Implement Firestore query to get user's documents
     // This is a placeholder for the actual implementation
-    
+
     return documents;
   } catch (error) {
     console.error('Error getting user document history:', error);

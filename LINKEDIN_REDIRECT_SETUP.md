@@ -19,15 +19,15 @@ This guide provides step-by-step instructions for configuring the redirect URLs 
 
 1. Look for the "Authorized redirect URLs for your app" section
 2. Click the "Add redirect URL" button
-3. Enter the following URL for local development:
+3. Enter the following URL for the public application:
    ```
-   http://localhost:3000/api/linkedin/callback
+   https://cvjob-3a4ed.web.app/api/linkedin/callback
    ```
 4. Click "Add"
 
-5. When ready for production, add your production URL:
+5. For local development, you can also add:
    ```
-   https://YOUR_DOMAIN.com/api/linkedin/callback
+   http://localhost:3000/api/linkedin/callback
    ```
 
 ### Step 3: Save Changes
