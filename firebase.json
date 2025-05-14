@@ -19,7 +19,16 @@
         "source": "**",
         "function": "nextjs-server"
       }
-    ]
+    ],
+    "env": {
+      "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyBCbiDsPDHWsNJZOoHxaAGGOLBR8-feKqc",
+      "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "cvjob-3a4ed.firebaseapp.com",
+      "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "cvjob-3a4ed",
+      "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "cvjob-3a4ed.firebasestorage.app",
+      "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "862516684618",
+      "NEXT_PUBLIC_FIREBASE_APP_ID": "1:862516684618:web:77c1968f0fc33d88e0c3b3",
+      "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-JC69DM0NX6"
+    }
   },
   "firestore": {
     "rules": "firestore.rules",

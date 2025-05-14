@@ -5,10 +5,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Support for Firebase's experimental support for Next.js
-  experimental: {
-    serverComponentsExternalPackages: [],
-  },
   // Ensure we support API routes properly through Firebase Functions
   rewrites: async () => {
     return [
