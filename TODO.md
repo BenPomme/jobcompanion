@@ -115,3 +115,51 @@
 - [ ] Add job application tracking
 - [ ] Implement multi-language support
 - [ ] Create mobile app version
+
+## Critical Path (Highest Priority)
+
+- [x] Fix OpenID Connect flow in LinkedIn auth
+- [x] Update API endpoints for web search integration
+- [x] Implement OpenAI web search API for LinkedIn profile extraction
+- [x] Implement OpenAI web search API for LinkedIn job description extraction
+- [x] Add Puppeteer fallback for job description scraping
+- [x] Update frontend components to use new API endpoints
+- [x] Add manual fallback for both profile and job data entry
+- [x] Fix API endpoint 404 errors by moving logic to Firebase Functions
+- [x] Set OpenAI API key in Firebase Functions config
+- [ ] Polish UI to match LinkedIn style (compact, sleek, consistent)
+- [ ] Deploy and test end-to-end workflow
+- [ ] Fix all error handling and edge cases
+
+## Implementation Tasks
+
+### Backend
+- [x] Add OpenAI web search API to LinkedIn profile extraction
+- [x] Add OpenAI web search API to job description extraction
+- [x] Implement Puppeteer job scraping fallback
+- [x] Move API endpoints to Firebase Functions (fix 404 errors)
+- [x] Add robust error handling with fallbacks
+- [ ] Set up caching for API responses to reduce costs
+
+### Frontend
+- [x] Update LinkedInConnect component to request/use profile URL
+- [x] Ensure JobInput component uses new job extraction endpoint
+- [x] Add clear loading/error states and manual fallbacks
+- [x] Point API calls to Firebase Functions instead of Next.js API routes
+- [ ] Improve UI components to match LinkedIn style
+- [ ] Add comprehensive error handling in API calls
+
+### Deployment
+- [x] Test all endpoints in development
+- [x] Build and deploy to Firebase
+- [x] Set up Firebase Functions configuration
+- [x] Set OpenAI API key (run: firebase functions:config:set openai.api_key=YOUR_API_KEY)
+- [ ] Verify end-to-end workflow in production
+- [ ] Monitor for any errors or issues
+
+## Future Enhancements
+- [ ] Improve cover letter generation with job-specific insights
+- [ ] Add ability to save/load multiple CVs and job descriptions
+- [ ] Enhance CV template options and styling
+- [ ] Add rate limiting to protect against API abuse
+- [ ] Implement efficient caching to reduce API costs
