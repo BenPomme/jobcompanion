@@ -1,155 +1,183 @@
 # Deployment Guide for CV & Cover Letter Generator
 
-This document outlines the steps needed to fully deploy the CV & Cover Letter Generator application to production.
+This document provides detailed instructions for deploying the CV & Cover Letter Generator application to Firebase.
 
 ## Prerequisites
 
-Before deployment, ensure you have:
+- Node.js 18 (required by Firebase)
+- Firebase CLI installed globally (`npm install -g firebase-tools`)
+- Firebase account with a created project (`cvjob-3a4ed`)
+- LinkedIn Developer account with configured application
+- OpenAI API key
 
-1. A Firebase account
-2. An OpenAI API key
-3. A LinkedIn Developer account (for LinkedIn integration)
-4. A GitHub account (optional, for CI/CD)
-5. Node.js (version 18+) and npm installed
+## Initial Setup
 
-## Step 1: Project Setup
-
-1. Clone the repository (if using GitHub):
+1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
-   cd cv-project
+   git clone https://github.com/BenPomme/jobcompanion.git
+   cd jobcompanion
    ```
 
-2. Run the setup script:
+2. **Set Node.js version**:
    ```bash
-   ./setup.sh
-   ```
+   # If using nvm (recommended)
+   nvm use 18
    
-   This script will:
-   - Install dependencies for the main project and Firebase Functions
-   - Guide you through Firebase login
-   - Create a `.env.local` file from the template
-   - Update configuration with your Firebase project ID and OpenAI API key
-
-3. Manually update the remaining environment variables in `.env.local`:
-   - Firebase configuration details
-   - LinkedIn API credentials
-
-## Step 2: Create Firebase Project
-
-1. Go to the [Firebase Console](https://console.firebase.google.com/)
-2. Click "Add project" and follow the setup wizard
-3. Enable the required services:
-   - Authentication (Email/Password and Google providers)
-   - Firestore Database
-   - Storage
-   - Functions
-   - Hosting
-
-4. Obtain Firebase configuration from Project Settings > Your Apps > Web app
-
-## Step 3: Configure OpenAI API
-
-1. Ensure your OpenAI API key is set in the Firebase Functions environment:
-   ```bash
-   firebase functions:config:set openai.api_key="your_openai_api_key"
+   # Verify the version
+   node -v  # Should show v18.x.x
    ```
 
-2. Deploy the environment variables:
+3. **Install dependencies**:
    ```bash
-   firebase deploy --only functions
+   npm install
+   
+   # Also install functions dependencies
+   cd functions
+   npm install
+   cd ..
    ```
 
-## Step 4: Set Up LinkedIn API (Optional)
-
-1. Create a LinkedIn Developer application
-2. Configure the OAuth redirect URLs:
-   - For local development: `http://localhost:3000/api/linkedin/callback`
-   - For production: `https://<your-firebase-app>.web.app/api/linkedin/callback`
-3. Add the LinkedIn Client ID and Secret to your `.env.local` file
-4. Update the Firebase Functions configuration:
-   ```bash
-   firebase functions:config:set linkedin.client_id="your_linkedin_client_id" linkedin.client_secret="your_linkedin_client_secret" linkedin.redirect_uri="https://<your-firebase-app>.web.app/api/linkedin/callback"
+4. **Configure environment variables**:
+   Create a `.env.local` file with the following:
+   ```
+   # Firebase Config
+   NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyBCbiDsPDHWsNJZOoHxaAGGOLBR8-feKqc
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=cvjob-3a4ed.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=cvjob-3a4ed
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=cvjob-3a4ed.firebasestorage.app
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=862516684618
+   NEXT_PUBLIC_FIREBASE_APP_ID=1:862516684618:web:77c1968f0fc33d88e0c3b3
+   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-JC69DM0NX6
+   
+   # OpenAI Config
+   OPENAI_API_KEY=your_openai_api_key
+   
+   # LinkedIn Config
+   LINKEDIN_CLIENT_ID=your_linkedin_client_id
+   LINKEDIN_CLIENT_SECRET=your_linkedin_client_secret
+   LINKEDIN_REDIRECT_URI=https://cvjob-3a4ed.web.app/api/linkedin/callback
+   
+   # Document Generation
+   MAX_CV_LENGTH=3000
+   MAX_COVER_LETTER_LENGTH=2000
    ```
 
-## Step 5: Full Deployment
+5. **Login to Firebase**:
+   ```bash
+   firebase login
+   ```
 
-1. Build the Next.js application:
+6. **Set Firebase project**:
+   ```bash
+   firebase use cvjob-3a4ed
+   ```
+
+## Deployment
+
+### Automatic Deployment
+
+Use the provided deployment script:
+
+```bash
+# Make sure you're using Node.js 18
+nvm use 18
+
+# Run the deployment script
+./deploy.sh
+```
+
+### Manual Deployment
+
+If the script doesn't work for you, follow these steps:
+
+1. **Build the Next.js application**:
    ```bash
    npm run build
    ```
 
-2. Deploy to Firebase:
+2. **Set up Firebase Function configuration**:
+   ```bash
+   # OpenAI API key
+   firebase functions:config:set openai.apikey="your_openai_api_key"
+   
+   # LinkedIn configuration
+   firebase functions:config:set linkedin.client_id="your_linkedin_client_id"
+   firebase functions:config:set linkedin.client_secret="your_linkedin_client_secret"
+   firebase functions:config:set linkedin.redirect_uri="https://cvjob-3a4ed.web.app/api/linkedin/callback"
+   ```
+
+3. **Deploy to Firebase**:
    ```bash
    firebase deploy
    ```
 
-   This will deploy:
-   - Hosting: The Next.js application
-   - Functions: The OpenAI API integration and other server functions
-   - Firestore Rules: Security rules for database
-   - Storage Rules: Security rules for file storage
+## LinkedIn Configuration
 
-3. Access your deployed application at:
+1. Go to [LinkedIn Developer Portal](https://developer.linkedin.com/)
+2. Navigate to your app settings
+3. In the Auth tab, add the redirect URL:
    ```
-   https://<your-firebase-app>.web.app
+   https://cvjob-3a4ed.web.app/api/linkedin/callback
    ```
-
-## Step 6: Set Up CI/CD with GitHub (Optional)
-
-1. Push your code to a GitHub repository
-2. Set up GitHub secrets in your repository settings:
-   - `FIREBASE_SERVICE_ACCOUNT`: Your Firebase service account JSON (generate in Firebase Console > Project Settings > Service Accounts)
-   - `FIREBASE_PROJECT_ID`: Your Firebase project ID
-
-3. The GitHub workflow will automatically deploy your application whenever changes are pushed to the main branch
-
-## Step 7: Domain Configuration (Optional)
-
-1. Purchase a domain name
-2. Configure custom domain in Firebase Hosting:
-   ```
-   Firebase Console > Hosting > Add custom domain
-   ```
-3. Follow the DNS configuration instructions
-
-## Step 8: Usage Monitoring
-
-1. Set up Firebase budget alerts to monitor OpenAI API costs:
-   ```
-   Firebase Console > Project Settings > Usage and Billing > Budgets & alerts
-   ```
-
-2. Monitor application usage through:
-   - Firebase Analytics
-   - Firestore usage collection
-   - Firebase Functions logs
+4. Make sure the app has the following OAuth 2.0 scopes:
+   - r_liteprofile
+   - r_emailaddress (if available)
 
 ## Troubleshooting
 
-If you encounter deployment issues:
+### Common Issues
 
-1. Check Firebase Functions logs for errors:
-   ```bash
-   firebase functions:log
-   ```
+1. **Node.js version conflicts**:
+   - Make sure you're using Node.js 18
+   - If you have NVM, use `nvm use 18`
 
-2. Verify environment variables are correctly set:
-   ```bash
-   firebase functions:config:get
-   ```
+2. **Deployment timeouts**:
+   - Try deploying functions and hosting separately:
+     ```bash
+     firebase deploy --only functions
+     firebase deploy --only hosting
+     ```
 
-3. For local testing, use Firebase emulators:
-   ```bash
-   firebase emulators:start
-   ```
+3. **LinkedIn integration issues**:
+   - Verify the redirect URL in LinkedIn Developer Portal
+   - Check that the client ID and secret are correct
+   - Ensure the scope matches what your app is allowed to access
 
-## Security Checklist
+4. **OpenAI API key issues**:
+   - Verify the key in Firebase Functions config
+   - Check for rate limit errors in logs
 
-Before going live, ensure:
+### Deployment Logs
 
-1. Firestore security rules are properly configured
-2. Storage security rules are properly configured
-3. API keys are stored securely in environment variables
-4. Authentication is required for all sensitive operations
-5. Rate limiting is implemented to prevent abuse
+To view logs for troubleshooting:
+
+```bash
+# Cloud Functions logs
+firebase functions:log
+
+# Hosting deployment logs
+firebase hosting:clone
+```
+
+## Monitoring
+
+Monitor your application after deployment:
+
+1. **Firebase Console**:
+   - https://console.firebase.google.com/project/cvjob-3a4ed
+
+2. **Application URL**:
+   - https://cvjob-3a4ed.web.app
+
+3. **Firebase Analytics**:
+   - Monitor user behavior in the Firebase console
+
+## CI/CD Integration
+
+For continuous deployment, set up a GitHub Actions workflow:
+
+1. Add Firebase service account credentials to GitHub secrets
+2. Configure the workflow to deploy on push to main
+3. Use the same Node.js version (18) in the workflow
+
+A sample workflow file is provided in `.github/workflows/firebase-deploy.yml`

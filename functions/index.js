@@ -1,14 +1,98 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const { OpenAI } = require('openai');
+const axios = require('axios');
+const cors = require('cors')({ origin: true });
 
 admin.initializeApp();
 
-// Initialize OpenAI with API key from environment variables
-// In production, this comes from Firebase Functions config
-// In development, it comes from environment variables
+// Initialize OpenAI with API key from Firebase config
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || functions.config().openai?.apikey,
+});
+
+// Get LinkedIn config from Firebase config
+const linkedInConfig = {
+  clientId: functions.config().linkedin?.client_id,
+  clientSecret: functions.config().linkedin?.client_secret,
+  redirectUri: functions.config().linkedin?.redirect_uri || 'https://cvjob-3a4ed.web.app/api/linkedin/callback'
+};
+
+/**
+ * Next.js server function to handle all Next.js routes
+ * This enables the full Next.js app to run on Firebase
+ */
+exports.nextjsServer = functions.https.onRequest((req, res) => {
+  cors(req, res, () => {
+    // Log incoming requests for debugging
+    console.log(`Request path: ${req.path}`);
+    console.log(`Request method: ${req.method}`);
+
+    // Handle LinkedIn Auth route
+    if (req.path === '/api/linkedin/auth' && req.method === 'GET') {
+      const scope = encodeURIComponent('r_liteprofile r_emailaddress');
+      const state = Math.random().toString(36).substring(2);
+      const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${linkedInConfig.clientId}&redirect_uri=${encodeURIComponent(linkedInConfig.redirectUri)}&state=${state}&scope=${scope}`;
+      return res.json({ authUrl });
+    }
+
+    // Handle LinkedIn Callback route
+    if (req.path === '/api/linkedin/callback' && req.method === 'POST') {
+      const { code } = req.body;
+
+      if (!code) {
+        return res.status(400).json({ error: 'Missing authorization code' });
+      }
+
+      // Exchange code for access token
+      return axios.post('https://www.linkedin.com/oauth/v2/accessToken', null, {
+        params: {
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: linkedInConfig.redirectUri,
+          client_id: linkedInConfig.clientId,
+          client_secret: linkedInConfig.clientSecret,
+        },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      })
+      .then(tokenResponse => {
+        const accessToken = tokenResponse.data.access_token;
+
+        // Get user profile with the token
+        return Promise.all([
+          axios.get('https://api.linkedin.com/v2/me', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }),
+          // Try to get email if we have permission
+          axios.get('https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }).catch(err => ({ data: { elements: [] } })), // Return empty if we don't have permission
+        ]);
+      })
+      .then(([profileResponse, emailResponse]) => {
+        // Return the profile data
+        const profile = {
+          id: profileResponse.data.id,
+          firstName: profileResponse.data.localizedFirstName,
+          lastName: profileResponse.data.localizedLastName,
+          email: emailResponse.data.elements[0]?.['handle~']?.emailAddress || null,
+        };
+
+        return res.json({ profile });
+      })
+      .catch(error => {
+        console.error('Error in LinkedIn OAuth flow:', error);
+        return res.status(500).json({
+          error: 'Failed to authenticate with LinkedIn',
+        });
+      });
+    }
+
+    // If not a special route, pass through to the existing functions
+    return res.status(404).json({ error: 'Route not implemented in functions' });
+  });
 });
 
 /**

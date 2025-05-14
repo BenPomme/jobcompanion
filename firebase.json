@@ -4,11 +4,22 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "functions/**"
     ],
     "frameworksBackend": {
       "region": "us-central1"
-    }
+    },
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "function": "nextjs-server"
+      },
+      {
+        "source": "**",
+        "function": "nextjs-server"
+      }
+    ]
   },
   "firestore": {
     "rules": "firestore.rules",
@@ -19,8 +30,26 @@
   },
   "functions": {
     "source": "functions",
+    "runtime": "nodejs18",
     "predeploy": [
       "npm --prefix \"$RESOURCE_DIR\" install"
     ]
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "hosting": {
+      "port": 5000
+    },
+    "storage": {
+      "port": 9199
+    },
+    "ui": {
+      "enabled": true
+    }
   }
 }

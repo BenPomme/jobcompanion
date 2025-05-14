@@ -1,8 +1,16 @@
 #!/bin/bash
 
-# CV & Cover Letter Generator Deployment Script
+# Exit on any error
+set -e
 
 echo "🚀 Starting deployment process..."
+
+# Check if Node.js version is compatible
+NODE_VERSION=$(node -v)
+echo "📋 Current Node.js version: $NODE_VERSION"
+echo "ℹ️ Make sure to manually run 'nvm use 18' before running this script"
+
+echo "✅ Using Node.js $NODE_VERSION"
 
 # Check if Firebase CLI is installed
 if ! command -v firebase &> /dev/null; then
@@ -10,52 +18,45 @@ if ! command -v firebase &> /dev/null; then
     exit 1
 fi
 
-# Check if user is logged in to Firebase
+# Log in to Firebase if needed
 firebase projects:list &> /dev/null
 if [ $? -ne 0 ]; then
     echo "🔑 Please login to Firebase:"
     firebase login
 fi
 
-# Build Next.js application
+# Ensure using the right Firebase project
+echo "📋 Setting Firebase project..."
+firebase use cvjob-3a4ed
+
+# Clean build directories
+echo "🧹 Cleaning build directories..."
+rm -rf .next out
+
+# Install frontend dependencies
+echo "📦 Installing frontend dependencies..."
+npm ci
+
+# Build Next.js
 echo "🏗️ Building Next.js application..."
 npm run build
-if [ $? -ne 0 ]; then
-    echo "❌ Build failed. Please fix errors and try again."
-    exit 1
-fi
 
-# Deploy Firebase functions
-echo "⚙️ Deploying Firebase functions..."
-firebase deploy --only functions
-if [ $? -ne 0 ]; then
-    echo "❌ Function deployment failed."
-    exit 1
-fi
+# Install and build functions
+echo "⚙️ Setting up Firebase Functions..."
+cd functions
+npm ci
+cd ..
 
-# Deploy Firestore rules
-echo "📝 Deploying Firestore rules..."
-firebase deploy --only firestore:rules
-if [ $? -ne 0 ]; then
-    echo "❌ Firestore rules deployment failed."
-    exit 1
-fi
+# Update environment configs
+echo "🔧 Setting up environment configurations..."
+firebase functions:config:set openai.apikey="$(grep OPENAI_API_KEY .env.local | cut -d '=' -f2-)"
+firebase functions:config:set linkedin.client_id="$(grep LINKEDIN_CLIENT_ID .env.local | cut -d '=' -f2-)"
+firebase functions:config:set linkedin.client_secret="$(grep LINKEDIN_CLIENT_SECRET .env.local | cut -d '=' -f2-)"
+firebase functions:config:set linkedin.redirect_uri="https://cvjob-3a4ed.web.app/api/linkedin/callback"
 
-# Deploy Storage rules
-echo "📦 Deploying Storage rules..."
-firebase deploy --only storage:rules
-if [ $? -ne 0 ]; then
-    echo "❌ Storage rules deployment failed."
-    exit 1
-fi
+# Deploy to Firebase
+echo "🚀 Deploying to Firebase..."
+firebase deploy --force
 
-# Deploy hosting
-echo "🌐 Deploying hosting..."
-firebase deploy --only hosting
-if [ $? -ne 0 ]; then
-    echo "❌ Hosting deployment failed."
-    exit 1
-fi
-
-echo "✅ Deployment complete! Your application is now live."
-echo "📊 Visit the Firebase console to monitor your application: https://console.firebase.google.com/project/cvjob-3a4ed"
+echo "✅ Deployment complete! Your application is now live at https://cvjob-3a4ed.web.app"
+echo "📝 Note: If you're seeing deployment issues, check the Firebase console and logs for details."
