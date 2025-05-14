@@ -26,6 +26,7 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+set-openai-key.sh
 
 # vercel
 .vercel

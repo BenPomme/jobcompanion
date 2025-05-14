@@ -56,7 +56,8 @@ export async function getLinkedInAuthUrl() {
     throw new Error('LinkedIn client ID or redirect URI not configured');
   }
   
-  const scope = encodeURIComponent('r_liteprofile r_emailaddress');
+  // Using just r_liteprofile since r_emailaddress might require additional verification
+  const scope = encodeURIComponent('r_liteprofile');
   const state = Math.random().toString(36).substring(2);
   
   return `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=${scope}`;
@@ -101,12 +102,18 @@ export async function getProfileData(accessToken: string): Promise<LinkedInProfi
       },
     });
     
-    // Get email address
-    const emailResponse = await axios.get(`${LINKEDIN_API_URL}/emailAddress?q=members&projection=(elements*(handle~))`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    // Try to get email address if we have permission
+    let emailResponse;
+    try {
+      emailResponse = await axios.get(`${LINKEDIN_API_URL}/emailAddress?q=members&projection=(elements*(handle~))`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+    } catch (error) {
+      console.log('Unable to fetch email - likely not authorized in the app settings');
+      emailResponse = { data: { elements: [] } };
+    }
     
     // Get profile picture
     const pictureResponse = await axios.get(
@@ -153,7 +160,7 @@ export async function getProfileData(accessToken: string): Promise<LinkedInProfi
       id: profileResponse.data.id,
       firstName: profileResponse.data.firstName.localized.en_US,
       lastName: profileResponse.data.lastName.localized.en_US,
-      email: emailResponse.data.elements[0]['handle~'].emailAddress,
+      email: emailResponse.data.elements[0]?.['handle~']?.emailAddress || null,
       headline: profileResponse.data.headline?.localized.en_US,
       profilePicture:
         pictureResponse.data.profilePicture?.displayImage?.elements[0]?.identifiers[0]?.identifier,
