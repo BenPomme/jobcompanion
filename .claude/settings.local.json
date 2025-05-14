@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__puppeteer__puppeteer_navigate",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init:*)",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "WebFetch(domain:platform.openai.com)",
+      "WebFetch(domain:openai.com)",
+      "Bash(chmod:*)"
+    ],
+    "deny": []
+  }
+}
