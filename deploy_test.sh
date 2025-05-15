@@ -60,31 +60,14 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}Generate page is accessible or redirects properly.${NC}"
 
-# Step 4: Verify Firebase Functions
-echo -e "${YELLOW}Checking Firebase Functions...${NC}"
-FUNCTIONS_BASE_URL="https://us-central1-$PROJECT_ID.cloudfunctions.net"
-
-# List available functions
-echo -e "Available Firebase Functions:"
-firebase functions:list
-
-# Check if LinkedIn profile function is accessible
-echo -e "Checking LinkedIn profile function at $FUNCTIONS_BASE_URL/linkedinProfile"
-curl -s -o /dev/null -w "%{http_code}" -X OPTIONS $FUNCTIONS_BASE_URL/linkedinProfile | grep -E "200|204" > /dev/null
+# Check generate API route
+echo -e "${YELLOW}Checking Next.js API generate endpoint...${NC}"
+curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/generate | grep -E "200|401|405" > /dev/null
 if [ $? -ne 0 ]; then
-  echo -e "${RED}LinkedIn profile function check failed! The function might be unavailable.${NC}"
+  echo -e "${RED}Generate API endpoint check failed!${NC}"
   exit 1
 fi
-echo -e "${GREEN}LinkedIn profile function is accessible.${NC}"
-
-# Check if LinkedIn job function is accessible
-echo -e "Checking LinkedIn job function at $FUNCTIONS_BASE_URL/jobExtract"
-curl -s -o /dev/null -w "%{http_code}" -X OPTIONS $FUNCTIONS_BASE_URL/jobExtract | grep -E "200|204" > /dev/null
-if [ $? -ne 0 ]; then
-  echo -e "${RED}LinkedIn job function check failed! The function might be unavailable.${NC}"
-  exit 1
-fi
-echo -e "${GREEN}LinkedIn job function is accessible.${NC}"
+echo -e "${GREEN}Generate API endpoint is accessible.${NC}"
 
 echo -e "${GREEN}All health checks passed successfully!${NC}"
 echo -e "${YELLOW}Deployment and basic testing complete. Please perform manual testing to verify all features.${NC}"
