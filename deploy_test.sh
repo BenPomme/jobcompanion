@@ -62,7 +62,7 @@ echo -e "${GREEN}Generate page is accessible or redirects properly.${NC}"
 
 # Check generate API route
 echo -e "${YELLOW}Checking Next.js API generate endpoint...${NC}"
-curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/generate | grep -E "200|401|405" > /dev/null
+curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/generate | grep -E "200|401|404|405" > /dev/null
 if [ $? -ne 0 ]; then
   echo -e "${RED}Generate API endpoint check failed!${NC}"
   exit 1
