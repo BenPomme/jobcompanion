@@ -17,9 +17,14 @@ export async function saveGeneratedDocuments(
   }
 ) {
   try {
+    // Check if Firebase Storage and Firestore are initialized
+    if (!storage || !db) {
+      throw new Error('Firebase services not initialized');
+    }
+
     const timestamp = Date.now();
     const docFiles = [];
-    
+
     // Generate PDF
     if (data.cv) {
       const pdfBytes = await generatePDF({ cv: data.cv });
@@ -28,7 +33,7 @@ export async function saveGeneratedDocuments(
       const pdfUrl = await getDownloadURL(pdfRef);
       docFiles.push({ type: 'cv', format: 'pdf', url: pdfUrl });
     }
-    
+
     if (data.coverLetter) {
       const clPdfBytes = await generatePDF({ coverLetter: data.coverLetter });
       const clPdfRef = ref(storage, `documents/${userId}/cover_letter_${timestamp}.pdf`);
@@ -36,7 +41,7 @@ export async function saveGeneratedDocuments(
       const clPdfUrl = await getDownloadURL(clPdfRef);
       docFiles.push({ type: 'coverLetter', format: 'pdf', url: clPdfUrl });
     }
-    
+
     // Generate DOCX
     if (data.cv) {
       const docxFiles = await generateDOCX({ cv: data.cv });
@@ -47,7 +52,7 @@ export async function saveGeneratedDocuments(
         docFiles.push({ type: 'cv', format: 'docx', url: docxUrl });
       }
     }
-    
+
     if (data.coverLetter) {
       const clDocxFiles = await generateDOCX({ coverLetter: data.coverLetter });
       if (clDocxFiles.length > 0) {
@@ -57,7 +62,7 @@ export async function saveGeneratedDocuments(
         docFiles.push({ type: 'coverLetter', format: 'docx', url: clDocxUrl });
       }
     }
-    
+
     // Save record to Firestore
     const docRef = await addDoc(collection(db, 'generated_documents'), {
       userId,

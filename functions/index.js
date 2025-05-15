@@ -13,7 +13,8 @@ admin.initializeApp();
 // Initialize OpenAI with Firebase config API key
 let openai;
 try {
-  const openaiApiKey = functions.config().openai?.api_key;
+  // Try both key formats since both exist in config
+  const openaiApiKey = functions.config().openai?.api_key || functions.config().openai?.apikey;
   
   if (!openaiApiKey) {
     console.error('ERROR: OpenAI API key is not configured. Set it using: firebase functions:config:set openai.api_key=YOUR_KEY');
@@ -241,6 +242,8 @@ async function handleGenerateDocuments(uid, profileData, jobData) {
 
     // Generate CV
     const cvPrompt = `
+      Please output only the CV text. Do not include any JSON or extra commentary.
+
       Create a professional CV for a job application with the following details:
       
       Candidate Profile:
@@ -277,6 +280,8 @@ async function handleGenerateDocuments(uid, profileData, jobData) {
 
     // Generate cover letter
     const coverLetterPrompt = `
+      Please output only the cover letter text. Do not include any JSON or extra commentary.
+
       Write a professional cover letter for a job application with the following details:
       
       Candidate Profile:
@@ -489,6 +494,8 @@ exports.generateDocuments = functions.https.onCall(async (data, context) => {
 
     // Generate CV using GPT-4o for highest quality
     const cvPrompt = `
+      Please output only the CV text. Do not include any JSON or extra commentary.
+
       Create a professional CV for a job application with the following details:
       
       Candidate Profile:
@@ -525,6 +532,8 @@ exports.generateDocuments = functions.https.onCall(async (data, context) => {
 
     // Generate cover letter using GPT-4o for highest quality
     const coverLetterPrompt = `
+      Please output only the cover letter text. Do not include any JSON or extra commentary.
+
       Write a professional cover letter for a job application with the following details:
       
       Candidate Profile:
@@ -944,26 +953,43 @@ exports.jobExtract = functions.https.onRequest(async (req, res) => {
           // Extract job details
           console.log('[Firebase Function] Extracting job details with Puppeteer');
           const jobData = await page.evaluate(() => {
-            // Try multiple selector patterns for each field
-            const title = document.querySelector('.job-title, [data-test-job-title], h1, .top-card-layout__title')?.textContent?.trim() || 'Unknown Title';
+            // Try multiple selector patterns for each field - expanded with more modern LinkedIn selectors
+            const title = document.querySelector('.job-title, [data-test-job-title], h1, .top-card-layout__title, .job-details-jobs-unified-top-card__job-title')?.textContent?.trim() || 'Unknown Title';
             
-            const company = document.querySelector('.company-name, [data-test-company-name], .topcard__org-name')?.textContent?.trim() || 'Unknown Company';
+            const company = document.querySelector('.company-name, [data-test-company-name], .topcard__org-name, .job-details-jobs-unified-top-card__company-name')?.textContent?.trim() || 'Unknown Company';
             
-            const location = document.querySelector('.job-location, [data-test-job-location], .topcard__flavor--bullet')?.textContent?.trim() || 'Unknown Location';
+            const location = document.querySelector('.job-location, [data-test-job-location], .topcard__flavor--bullet, .job-details-jobs-unified-top-card__bullet')?.textContent?.trim() || 'Unknown Location';
             
-            // For description, try various selectors and containers
-            const descriptionElement = document.querySelector('.job-description, .description__text, .show-more-less-html, .description');
+            // For description, try various selectors and containers with updated LinkedIn selectors
+            const descriptionElement = document.querySelector('.job-description, .description__text, .show-more-less-html, .description, .jobs-description__content, .jobs-box__html-content, .jobs-description-content__text');
             const description = descriptionElement ? descriptionElement.textContent?.trim() || '' : '';
             
-            // Try to extract requirements lists
+            // Try to extract requirements lists with expanded selectors
             const requirements = [];
-            const requirementElements = document.querySelectorAll('.job-description li, .description__text li, .show-more-less-html li');
+            const requirementElements = document.querySelectorAll('.job-description li, .description__text li, .show-more-less-html li, .jobs-description__content li, .jobs-box__html-content li');
             requirementElements.forEach(item => {
               const text = item.textContent?.trim();
               if (text && text.length > 5) {
                 requirements.push(text);
               }
             });
+            
+            // If we couldn't extract structured data, at least get all text content from the job page
+            if (!description || description.length < 50) {
+              const allJobContent = document.querySelector('.job-view-layout, .jobs-details, .jobs-unified-top-card__content-container');
+              if (allJobContent) {
+                const fullText = allJobContent.textContent?.trim() || '';
+                return {
+                  title,
+                  company,
+                  location,
+                  description: fullText,
+                  requirements,
+                  url: window.location.href,
+                  extractionMethod: 'puppeteer-fallback'
+                };
+              }
+            }
             
             return {
               title,
@@ -1010,7 +1036,7 @@ exports.jobExtract = functions.https.onRequest(async (req, res) => {
  */
 exports.checkOpenAIConfig = functions.https.onCall(async (data, context) => {
   try {
-    const openaiApiKey = functions.config().openai?.api_key;
+    const openaiApiKey = functions.config().openai?.api_key || functions.config().openai?.apikey;
     
     if (!openaiApiKey) {
       return {

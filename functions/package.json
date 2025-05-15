@@ -17,7 +17,9 @@
     "cors": "^2.8.5",
     "firebase-admin": "^11.8.0",
     "firebase-functions": "^4.3.1",
-    "openai": "^4.97.0"
+    "jsonwebtoken": "^9.0.2",
+    "openai": "^4.98.0",
+    "puppeteer": "^24.8.2"
   },
   "devDependencies": {
     "firebase-functions-test": "^3.1.0"

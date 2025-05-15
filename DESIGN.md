@@ -1,69 +1,48 @@
 # CV & Cover Letter Generator - Design Document
 
-## Project Overview
-A web application that helps users generate tailored CVs and cover letters for specific job applications by connecting their LinkedIn profile or uploading an existing CV, then linking to a LinkedIn job posting. The application uses OpenAI's API to create optimized documents for the specific job opportunity.
+## Single-Page Workflow
+The entire application flow is on one page, organized into three steps:
 
-## User Journey
-1. User visits the website
-2. User provides their professional information by either:
-   - Connecting LinkedIn profile (using LinkedIn API)
-   - Uploading an existing CV (PDF or DOCX)
-3. User provides job details by:
-   - Pasting LinkedIn job URL
-   - Uploading job description
-4. The application processes both inputs using OpenAI API
-5. User receives tailored CV and cover letter optimized for the specific job
-6. User can download the generated documents as PDF or DOCX
+1. **Profile**: Upload CV or enter details manually
+2. **Job**: Paste or enter job description details
+3. **Generate**: Live preview and download CV & Cover Letter
 
-## Technical Architecture
+A horizontal step indicator highlights the current step. On mobile (<640px), steps collapse into an accordion.
 
-### Frontend
-- **Framework**: Next.js with React 
-- **Styling**: Tailwind CSS
-- **Pages**:
-  - Home/Landing page 
-  - Profile input (LinkedIn/CV upload)
-  - Job input
-  - Results/Download page
+## UI Components
 
-### Backend
-- **Framework**: Next.js API routes
-- **Authentication**: Firebase Authentication
-- **Storage**: Firebase Storage (for uploaded CVs and generated documents)
-- **Database**: Firebase Firestore (user data and generation history)
+- **Step Indicator**: Interactive circles with numbers and labels
+- **Accordion**: Collapsible sections on mobile; only one open at a time
+- **Profile Section**:
+  - Tabs: Upload CV / Manual Entry
+  - Form fields with validation, autosave, and example placeholders
+- **Job Section**:
+  - Tabs: URL Extraction / Manual Entry (description textarea)
+  - Progress bar with estimated time during AI extraction
+- **Generate Section**:
+  - Live preview with toggles for formatted vs. plain-text
+  - Download buttons for PDF and DOCX
+  - Regenerate and edit-in-place options
 
-### External APIs
-- **OpenAI API**: For analyzing CV/LinkedIn profile and job posting to generate optimized documents
-- **LinkedIn API**: For fetching user profile data
-- **Document Processing**: pdf-lib for PDF manipulation, docx for Word document generation
+## Mobile-First Design
 
-## Data Flow
-1. User authenticates (optional for basic use, required for saving history)
-2. User data is collected (LinkedIn API or CV upload)
-3. Job data is collected 
-4. Both data sources are processed and sent to OpenAI API
-5. Generated content is formatted into downloadable documents
-6. Results are stored in Firebase (if user authenticated)
+- **Breakpoints**:
+  - Mobile: <640px – accordion layout, full-width stacked
+  - Tablet: 640–1024px – two-column cards
+  - Desktop: >1024px – multi-column or full-width
+- **Touch Targets**: Minimum 44×44px interactive areas
+- **Font Sizes**: Base 16px on mobile, scalable in design system
+- **Spacing**: 8px modular scale
 
-## Key Features
-- LinkedIn profile import
-- CV document upload and parsing
-- Job description analysis
-- AI-optimized CV generation
-- AI-crafted cover letter generation
-- Document download in multiple formats
-- User history (for authenticated users)
+## Styling & Theming
 
-## Technical Considerations
-- **Privacy**: Secure handling of personal data
-- **API Rate Limiting**: Managing OpenAI API cost and limits
-- **Document Parsing**: Extracting structured data from uploaded CVs
-- **Responsive Design**: Mobile-friendly interface
-- **Accessibility**: WCAG compliance
+- **Design System**: `app-` prefixed utility classes defined in `app-design-system.css`
+- **Color Palette**: Primary, Secondary, Success, Warning, Error (accessible contrast)
+- **Typography**: Sans-serif base font, line-height 1.5
+- **Icons**: Inline SVG with `app-icon` classes
 
-## Future Enhancements
-- Multiple CV templates
-- Cover letter customization options
-- Saved job applications
-- Premium features (additional formats, advanced optimization)
-- Integration with job application platforms
+## Accessibility
+
+- Keyboard navigation and focus management
+- ARIA roles and properties for tabs, accordion, and form fields
+- Contrast ratio ≥4.5:1 for all text and icons 

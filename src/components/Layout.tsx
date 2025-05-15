@@ -4,8 +4,7 @@ import Header from './Header';
 import Footer from './Footer';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { auth } from '@/utils/firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,27 +12,43 @@ interface LayoutProps {
   description?: string;
 }
 
-const Layout: React.FC<LayoutProps> = ({ 
-  children, 
-  title = 'CareerBoost - AI-Powered CV & Cover Letter Generator', 
+interface HeaderUser {
+  email: string;
+  name?: string;
+}
+
+const Layout: React.FC<LayoutProps> = ({
+  children,
+  title = 'JobCV - AI-Powered CV & Cover Letter Generator',
   description = 'Generate tailored CVs and cover letters for job applications using AI technology'
 }) => {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { currentUser, logout } = useAuth();
+  const [headerUser, setHeaderUser] = useState<HeaderUser | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
+  // Set isClient to true after component mounts (client-side only)
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-    
-    return () => unsubscribe();
+    setIsClient(true);
   }, []);
+
+  // Update headerUser when currentUser changes, only on client side
+  useEffect(() => {
+    if (!isClient) return;
+
+    if (currentUser && currentUser.email) {
+      setHeaderUser({
+        email: currentUser.email,
+        name: currentUser.displayName || undefined
+      });
+    } else {
+      setHeaderUser(null);
+    }
+  }, [currentUser, isClient]);
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+      await logout();
       router.push('/');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -49,10 +64,12 @@ const Layout: React.FC<LayoutProps> = ({
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Header user={user} onSignOut={handleSignOut} />
+      <Header user={headerUser} onSignOut={handleSignOut} />
       
-      <main className="flex-grow bg-gray-50">
-        {children}
+      <main className="flex-grow py-6">
+        <div className="app-container">
+          {children}
+        </div>
       </main>
       
       <Footer />

@@ -1,23 +1,36 @@
 {
   "hosting": {
-    "source": ".",
+    "public": "out",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**",
       "functions/**"
     ],
-    "frameworksBackend": {
-      "region": "us-central1"
-    },
+    "cleanUrls": true,
+    "trailingSlash": false,
     "rewrites": [
       {
         "source": "/api/**",
-        "function": "nextjs-server"
-      },
+        "function": "api"
+      }
+    ],
+    "headers": [
       {
-        "source": "**",
-        "function": "nextjs-server"
+        "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|js|css|eot|otf|ttf|ttc|woff|woff2|font.css)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=604800"
+          }
+        ]
+      }
+    ],
+    "redirects": [
+      {
+        "source": "/index.html",
+        "destination": "/",
+        "type": 301
       }
     ],
     "env": {

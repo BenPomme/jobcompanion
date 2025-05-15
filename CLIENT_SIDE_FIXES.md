@@ -5,7 +5,6 @@ This document details the fixes implemented to resolve client-side exceptions in
 ## Issues Fixed
 
 1. **OpenAI Client-Side Initialization Errors**
-   - Error: `The OPENAI_API_KEY environment variable is missing or empty` appearing when clicking "Connect LinkedIn" or "Upload CV"
    - Root cause: Direct OpenAI imports in client-side code trying to initialize the OpenAI client
    - Fixed: Removed direct OpenAI imports from client-side components and implemented mock data providers
 

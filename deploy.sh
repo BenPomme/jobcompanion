@@ -5,12 +5,25 @@ set -e
 
 echo "🚀 Starting deployment process..."
 
-# Check if Node.js version is compatible
-NODE_VERSION=$(node -v)
-echo "📋 Current Node.js version: $NODE_VERSION"
-echo "ℹ️ Make sure to manually run 'nvm use 18' before running this script"
-
-echo "✅ Using Node.js $NODE_VERSION"
+# Force Node.js 18 via nvm
+if [ -s "$HOME/.nvm/nvm.sh" ]; then
+  source "$HOME/.nvm/nvm.sh"
+  nvm use 18
+  NODE_VERSION=$(node -v)
+  if [[ ! $NODE_VERSION =~ ^v18 ]]; then
+    echo "❌ Failed to switch to Node.js 18. Please manually run 'nvm use 18' and try again."
+    exit 1
+  fi
+  echo "✅ Using Node.js $NODE_VERSION"
+else
+  NODE_VERSION=$(node -v)
+  if [[ ! $NODE_VERSION =~ ^v18 ]]; then
+    echo "❌ Node.js 18 is required but found $NODE_VERSION"
+    echo "Please install Node.js 18 or use nvm to switch versions"
+    exit 1
+  fi
+  echo "✅ Using Node.js $NODE_VERSION"
+fi
 
 # Check if Firebase CLI is installed
 if ! command -v firebase &> /dev/null; then

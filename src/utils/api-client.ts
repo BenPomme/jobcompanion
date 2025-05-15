@@ -1,101 +1,154 @@
-import { getAuth } from 'firebase/auth';
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { getApp } from 'firebase/app';
+import { auth } from './firebase';
 
-/**
- * Helper function to call Firebase Functions with authentication
- */
-export async function callAuthenticatedFunction<T, R>(
-  functionName: string,
-  data: T
-): Promise<R> {
-  try {
-    const auth = getAuth();
-    
-    // Ensure user is logged in
-    if (!auth.currentUser) {
-      throw new Error('You must be logged in to perform this action');
-    }
-    
-    // Get Firebase Functions instance
-    const functions = getFunctions(getApp());
-    
-    // Create a callable function reference
-    const callableFunction = httpsCallable<T, R>(functions, functionName);
-    
-    // Call the Firebase Function
-    const result = await callableFunction(data);
-    
-    return result.data;
-  } catch (error: any) {
-    console.error(`Error calling Firebase function ${functionName}:`, error);
-    throw new Error(error.message || `Failed to execute ${functionName}`);
-  }
+// Define base API URL - use hosted URL in production and localhost in development
+const API_BASE_URL = 
+  typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? 'https://us-central1-cvjob-3a4ed.cloudfunctions.net/api'
+    : 'http://localhost:3000/api';
+
+interface ApiOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  body?: any;
+  requiresAuth?: boolean;
 }
 
 /**
- * Helper function to call API endpoints with auth token
+ * Makes an API request to our Firebase Functions
+ * Handles authentication headers automatically if requiresAuth is true
  */
-export async function callApiWithAuth<T, R>(endpoint: string, data: T): Promise<R> {
-  try {
-    const auth = getAuth();
-    
-    // Ensure user is logged in
-    if (!auth.currentUser) {
-      throw new Error('You must be logged in to perform this action');
+export async function apiRequest<T>(
+  endpoint: string, 
+  options: ApiOptions = {}
+): Promise<T> {
+  const { 
+    method = 'GET', 
+    body, 
+    requiresAuth = true 
+  } = options;
+
+  // Only run on client side
+  if (typeof window === 'undefined') {
+    throw new Error('API requests can only be made on the client side');
+  }
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  // Add auth token if required
+  if (requiresAuth) {
+    try {
+      if (!auth) {
+        console.warn('[apiRequest] Auth not initialized for API request');
+      } else {
+        const token = await auth.currentUser?.getIdToken();
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        } else if (requiresAuth) {
+          console.warn('[apiRequest] Authentication required but no token available');
+        }
+      }
+    } catch (error) {
+      console.error('[apiRequest] Error getting auth token:', error);
     }
-    
-    // Get the user's ID token
-    const token = await auth.currentUser.getIdToken();
-    
-    // Call the API with the token in the Authorization header
-    const response = await fetch(`/api/${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(data)
-    });
-    
+  }
+
+  // Build request object
+  const requestOptions: RequestInit = {
+    method,
+    headers,
+    credentials: 'omit',
+    mode: 'cors',
+  };
+
+  if (method !== 'GET' && body) {
+    requestOptions.body = JSON.stringify(body);
+  }
+
+  try {
+    const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    console.log(`[apiRequest] Fetching:`, { url, method, headers, body });
+    const response = await fetch(url, requestOptions);
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `API error: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`[apiRequest] API error response:`, errorData);
+      throw new Error(
+        errorData.message || `API request failed with status ${response.status}`
+      );
     }
-    
-    return await response.json() as R;
-  } catch (error: any) {
-    console.error(`Error calling API endpoint ${endpoint}:`, error);
-    throw new Error(error.message || `Failed to call ${endpoint}`);
+    const json = await response.json();
+    console.log(`[apiRequest] Success:`, json);
+    return json;
+  } catch (error) {
+    console.error('[apiRequest] API request error:', error);
+    throw error;
   }
 }
 
+// Convenience methods for common HTTP methods
+export const api = {
+  get: <T>(endpoint: string, options?: Omit<ApiOptions, 'method' | 'body'>) => 
+    apiRequest<T>(endpoint, { ...options, method: 'GET' }),
+  
+  post: <T>(endpoint: string, body: any, options?: Omit<ApiOptions, 'method'>) => 
+    apiRequest<T>(endpoint, { ...options, method: 'POST', body }),
+  
+  put: <T>(endpoint: string, body: any, options?: Omit<ApiOptions, 'method'>) => 
+    apiRequest<T>(endpoint, { ...options, method: 'PUT', body }),
+  
+  delete: <T>(endpoint: string, options?: Omit<ApiOptions, 'method' | 'body'>) => 
+    apiRequest<T>(endpoint, { ...options, method: 'DELETE' }),
+};
+
 /**
- * Generate documents using Firebase Functions
+ * Generate documents using Firebase API
  */
 export async function generateDocuments(profileData: any, jobData: any) {
-  return callAuthenticatedFunction<
-    { profileData: any; jobData: any },
-    { cv: string; coverLetter: string }
-  >('generateDocuments', { profileData, jobData });
+  return api.post<{ cv: string; coverLetter: string }>(
+    'generate',
+    { profileData, jobData }
+  );
 }
 
 /**
- * Parse CV using Firebase Functions
+ * Parse CV using Firebase API
  */
 export async function parseCV(cvText: string) {
-  return callAuthenticatedFunction<
-    { cvText: string },
-    { parsedData: any }
-  >('parseCV', { cvText });
+  return api.post<{ parsedData: any }>(
+    'parse-cv',
+    { cvText }
+  );
 }
 
 /**
- * Parse LinkedIn job using Firebase Functions
+ * Parse LinkedIn job using Firebase API
  */
 export async function parseLinkedInJob(url: string) {
-  return callAuthenticatedFunction<
-    { url: string },
-    { jobDetails: string; url: string }
-  >('parseLinkedInJob', { url });
+  return api.post<{ jobDetails: string; url: string }>(
+    'linkedin/job',
+    { url }
+  );
+}
+
+/**
+ * Get LinkedIn authorization URL
+ */
+export async function getLinkedInAuthUrl() {
+  console.log('[getLinkedInAuthUrl] Called');
+  return api.get<{ authUrl: string }>(
+    'linkedin/auth',
+    { requiresAuth: false }
+  );
+}
+
+/**
+ * Handle LinkedIn callback with authorization code
+ */
+export async function processLinkedInCallback(code: string) {
+  console.log('[processLinkedInCallback] Called with code:', code);
+  return api.post<{ profile: any }>(
+    'linkedin/callback',
+    { code },
+    { requiresAuth: false }
+  );
 }

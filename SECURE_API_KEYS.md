@@ -1,4 +1,4 @@
-# Secure API Key Management
+# Secure API Key Management for CV & Cover Letter Generator
 
 This document outlines how we securely manage API keys, particularly the OpenAI API key, in the JobCompanion application.
 
@@ -26,11 +26,11 @@ During local development, the OpenAI API key is stored in the `.env.local` file,
 
 In production, we store the OpenAI API key in Firebase:
 
-#### Firebase Functions Environment Variables
+#### Production Environment (Firebase Functions)
 
 ```bash
 # Set the API key as a Firebase Functions environment variable
-firebase functions:config:set openai.apikey="your_openai_api_key"
+firebase functions:config:set openai.api_key="your_openai_api_key"
 ```
 
 These environment variables are:
@@ -53,9 +53,9 @@ This ensures the API key is never exposed to the client.
 In `functions/index.js`, we access the API key securely:
 
 ```javascript
-// Initialize OpenAI with API key from environment variables
+// Initialize OpenAI with API key from Firebase Functions config
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || functions.config().openai.apikey,
+  apiKey: functions.config().openai.api_key,
 });
 ```
 
@@ -73,7 +73,7 @@ To set up the OpenAI API key:
 2. **For production:**
    - Set Firebase Functions config:
      ```bash
-     firebase functions:config:set openai.apikey="your_openai_api_key"
+     firebase functions:config:set openai.api_key="your_openai_api_key"
      ```
    - Deploy functions: `firebase deploy --only functions`
 
@@ -91,6 +91,6 @@ If you need to update the API key:
 1. Update the local `.env.local` file
 2. Update the Firebase Functions config:
    ```bash
-   firebase functions:config:set openai.apikey="your_new_openai_api_key"
+   firebase functions:config:set openai.api_key="your_new_openai_api_key"
    ```
 3. Redeploy functions: `firebase deploy --only functions`

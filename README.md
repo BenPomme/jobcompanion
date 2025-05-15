@@ -1,11 +1,8 @@
 # CV & Cover Letter Generator
 
-An AI-powered web application that generates tailored CVs and cover letters for specific job applications by analyzing your LinkedIn profile or existing CV alongside the target job posting.
 
 ## Features
 
-- Connect your LinkedIn profile or upload your existing CV
-- Link to LinkedIn job postings or upload job descriptions
 - AI-powered analysis to match your skills with job requirements
 - Generate optimized CVs and cover letters tailored to specific jobs
 - Download documents in PDF or DOCX formats
@@ -13,7 +10,7 @@ An AI-powered web application that generates tailored CVs and cover letters for 
 
 ## Live Demo
 
-Coming soon!
+- https://cvjob-3a4ed.web.app
 
 ## Tech Stack
 
@@ -33,14 +30,13 @@ Coming soon!
 - Node.js 18+ and npm
 - Firebase account
 - OpenAI API key
-- LinkedIn Developer account (for LinkedIn integration)
 
 ### Installation
 
 1. Clone the repository:
-   ```
-   git clone https://github.com/BenPomme/jobcompanion.git
-   cd jobcompanion
+   ```bash
+   git clone https://github.com/your-org/cv-cover-letter-generator.git
+   cd cv-cover-letter-generator
    ```
 
 2. Install dependencies:
@@ -62,11 +58,6 @@ Coming soon!
    
    # OpenAI Config
    OPENAI_API_KEY=your_openai_api_key
-   
-   # LinkedIn Config
-   LINKEDIN_CLIENT_ID=your_linkedin_client_id
-   LINKEDIN_CLIENT_SECRET=your_linkedin_client_secret
-   LINKEDIN_REDIRECT_URI=http://localhost:3000/api/linkedin/callback
    ```
 
 4. Run the development server:
@@ -99,17 +90,7 @@ Coming soon!
 
 ## Deployment
 
-The application is configured for deployment on Firebase:
-
-1. Build the production version:
-   ```
-   npm run build
-   ```
-
-2. Deploy to Firebase:
-   ```
-   firebase deploy
-   ```
+See [Deployment.md](Deployment.md) for detailed deployment instructions.
 
 ## Development Status
 
@@ -117,7 +98,6 @@ The application is configured for deployment on Firebase:
 - [x] Firebase integration (Authentication, Firestore, Storage)
 - [x] Core components (CV upload, job input, document preview)
 - [x] OpenAI integration for document generation
-- [ ] Complete LinkedIn API integration
 - [ ] End-to-end testing
 - [ ] Production deployment
 

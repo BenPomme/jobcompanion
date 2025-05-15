@@ -1,9 +1,40 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { IncomingForm } from 'formidable';
-import { storage } from '@/utils/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import fs from 'fs';
 import path from 'path';
+
+// Dynamically import Firebase modules only on the server side
+// This prevents client-side errors when using static exports
+let storage: any = null;
+let ref: any = null;
+let uploadBytes: any = null;
+let getDownloadURL: any = null;
+
+// Initialize Firebase modules
+async function initFirebaseStorage() {
+  try {
+    // Import Firebase modules
+    const firebaseApp = await import('@/utils/firebase');
+    const storageModule = await import('firebase/storage');
+    
+    // Get Firebase services
+    const app = firebaseApp.initFirebase();
+    
+    if (!app || !app.storage) {
+      throw new Error('Firebase Storage not initialized');
+    }
+    
+    storage = app.storage;
+    ref = storageModule.ref;
+    uploadBytes = storageModule.uploadBytes;
+    getDownloadURL = storageModule.getDownloadURL;
+    
+    return true;
+  } catch (error) {
+    console.error('Error initializing Firebase Storage:', error);
+    return false;
+  }
+}
 
 // Disable the default body parser
 export const config = {
@@ -28,6 +59,13 @@ export default async function handler(
   }
 
   try {
+    // Initialize Firebase Storage on first API call
+    const isStorageInitialized = await initFirebaseStorage();
+    
+    if (!isStorageInitialized) {
+      throw new Error('Failed to initialize Firebase Storage');
+    }
+
     // Parse the incoming form data
     const form = new IncomingForm({
       multiples: false,

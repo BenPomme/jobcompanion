@@ -21,7 +21,6 @@ The application follows a modern web architecture with Next.js providing both fr
 ┌───────────────────────────────▼──────────────┐
 │              External Services               │
 │ ┌────────┐ ┌─────────┐ ┌───────┐ ┌────────┐  │
-│ │Firebase│ │LinkedIn │ │OpenAI │ │Document│  │
 │ │Services│ │   API   │ │  API  │ │Generators│ │
 │ └────────┘ └─────────┘ └───────┘ └────────┘  │
 └──────────────────────────────────────────────┘
@@ -31,7 +30,6 @@ The application follows a modern web architecture with Next.js providing both fr
 
 ### Frontend Components
 - **Layout**: Common layout wrapper with navigation and footer
-- **ProfileInput**: Handles LinkedIn connection and CV upload options
 - **JobInput**: Component for entering job details (URL or description)
 - **DocumentPreview**: Displays generated documents with download options
 - **AuthComponent**: Handles user authentication
@@ -39,7 +37,6 @@ The application follows a modern web architecture with Next.js providing both fr
 
 ### Backend Services
 - **Authentication Service**: Manages Firebase authentication
-- **LinkedIn Service**: Handles LinkedIn API integration
 - **Document Parser**: Extracts data from uploaded CVs
 - **OpenAI Service**: Communicates with OpenAI API
 - **Document Generator**: Creates CV/cover letter documents
@@ -55,15 +52,12 @@ interface User {
   email: string;
   name?: string;
   linkedInConnected: boolean;
-  linkedInData?: LinkedInProfile;
   uploadedCVs: CVDocument[];
   generatedDocuments: GeneratedDocument[];
 }
 ```
 
-### LinkedIn Profile Model
 ```typescript
-interface LinkedInProfile {
   id: string;
   name: string;
   headline: string;
@@ -72,7 +66,6 @@ interface LinkedInProfile {
   education: Education[];
   skills: string[];
   certifications: Certification[];
-  // Other LinkedIn profile data
 }
 ```
 
@@ -123,10 +116,6 @@ interface GeneratedDocument {
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
 
-### LinkedIn Integration
-- `GET /api/linkedin/auth` - LinkedIn OAuth authentication
-- `GET /api/linkedin/callback` - LinkedIn OAuth callback
-- `GET /api/linkedin/profile` - Get user's LinkedIn profile
 
 ### CV Management
 - `POST /api/cv/upload` - Upload CV document

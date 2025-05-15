@@ -16,7 +16,7 @@ export async function generatePDF(content: { cv?: string; coverLetter?: string }
       const margin = 72; // 1 inch margins
       
       // Split content into lines for proper formatting
-      const cvLines = content.cv.split('\n');
+      const cvLines = content.cv.split(/\r?\n/).map(l => l.replace(/\r|\n/g, ''));
       let y = height - margin;
       
       for (const line of cvLines) {
@@ -57,7 +57,7 @@ export async function generatePDF(content: { cv?: string; coverLetter?: string }
       const margin = 72;
       
       // Split content into paragraphs
-      const clParagraphs = content.coverLetter.split('\n\n');
+      const clParagraphs = content.coverLetter.split(/\r?\n\r?\n/).map(p => p.replace(/\r?\n/g, ' '));
       let y = height - margin;
       
       for (const paragraph of clParagraphs) {

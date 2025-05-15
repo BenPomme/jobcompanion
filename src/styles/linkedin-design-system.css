@@ -1,0 +1,525 @@
+/**
+ * LinkedIn Design System
+ * 
+ * This file contains styles extracted from LinkedIn's UI to make our application
+ * look and feel similar to LinkedIn's interface.
+ */
+
+:root {
+  /* LinkedIn Color Palette */
+  --linkedin-blue: #0a66c2;
+  --linkedin-blue-hover: #004182;
+  --linkedin-blue-active: #09223b;
+  --linkedin-black: #000000;
+  --linkedin-white: #ffffff;
+  --linkedin-gray-10: #f3f2f0;
+  --linkedin-gray-20: #eef3f8;
+  --linkedin-gray-30: #dce6f1;
+  --linkedin-gray-50: #86888a;
+  --linkedin-gray-60: #767676;
+  --linkedin-gray-70: #666666;
+  --linkedin-gray-80: #414141;
+  --linkedin-gray-90: #191919;
+  --linkedin-success: #057642;
+  --linkedin-error: #b74700;
+  
+  /* Success/Error variations */
+  --linkedin-success-bg: #f0faf7;
+  --linkedin-success-border: #c7ece1;
+  --linkedin-success-text: #057642;
+  --linkedin-error-bg: #fff1e5;
+  --linkedin-error-border: #ffd6b1;
+  --linkedin-error-text: #b74700;
+  
+  /* Background Colors */
+  --linkedin-bg: #f3f2ef;
+  
+  /* Typography Sizes */
+  --linkedin-font-size-xs: 0.75rem;    /* 12px */
+  --linkedin-font-size-sm: 0.875rem;   /* 14px */
+  --linkedin-font-size-md: 1rem;       /* 16px */
+  --linkedin-font-size-lg: 1.25rem;    /* 20px */
+  --linkedin-font-size-xl: 1.5rem;     /* 24px */
+  --linkedin-font-size-xxl: 2rem;      /* 32px */
+  
+  /* Typography Weights */
+  --linkedin-font-weight-regular: 400;
+  --linkedin-font-weight-semibold: 600;
+  --linkedin-font-weight-bold: 700;
+  
+  /* Spacing */
+  --linkedin-spacing-xxs: 0.25rem;     /* 4px */
+  --linkedin-spacing-xs: 0.5rem;       /* 8px */
+  --linkedin-spacing-sm: 0.75rem;      /* 12px */
+  --linkedin-spacing-md: 1rem;         /* 16px */
+  --linkedin-spacing-lg: 1.5rem;       /* 24px */
+  --linkedin-spacing-xl: 2rem;         /* 32px */
+  
+  /* Border Radius */
+  --linkedin-border-radius-sm: 0.25rem;  /* 4px */
+  --linkedin-border-radius-md: 0.5rem;   /* 8px */
+  --linkedin-border-radius-lg: 1.5rem;   /* 24px - for pills */
+  --linkedin-border-radius-full: 9999px; /* For circular buttons */
+  
+  /* Shadows */
+  --linkedin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --linkedin-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --linkedin-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+  
+  /* Transitions */
+  --linkedin-transition-fast: 120ms ease-in-out;
+  --linkedin-transition-normal: 200ms ease-in-out;
+}
+
+/* Apply LinkedIn background color to the entire app */
+body {
+  background-color: var(--linkedin-bg);
+}
+
+/* Base Typography */
+body, .linkedin-typography {
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, Oxygen, "Oxygen Sans", Cantarell, "Droid Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Lucida Grande", Helvetica, Arial, sans-serif;
+  font-size: var(--linkedin-font-size-md);
+  line-height: 1.5;
+  color: var(--linkedin-gray-90);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Headings */
+.linkedin-h1, .linkedin-heading-large {
+  font-size: var(--linkedin-font-size-xxl);
+  font-weight: var(--linkedin-font-weight-bold);
+  line-height: 1.25;
+  color: var(--linkedin-gray-90);
+  margin-bottom: var(--linkedin-spacing-md);
+}
+
+.linkedin-h2, .linkedin-heading-medium {
+  font-size: var(--linkedin-font-size-xl);
+  font-weight: var(--linkedin-font-weight-semibold);
+  line-height: 1.3;
+  color: var(--linkedin-gray-90);
+  margin-bottom: var(--linkedin-spacing-sm);
+}
+
+.linkedin-h3, .linkedin-heading-small {
+  font-size: var(--linkedin-font-size-lg);
+  font-weight: var(--linkedin-font-weight-semibold);
+  line-height: 1.4;
+  color: var(--linkedin-gray-90);
+  margin-bottom: var(--linkedin-spacing-xs);
+}
+
+/* Text Styles */
+.linkedin-text-large {
+  font-size: var(--linkedin-font-size-lg);
+  line-height: 1.5;
+}
+
+.linkedin-text-medium {
+  font-size: var(--linkedin-font-size-md);
+  line-height: 1.5;
+}
+
+.linkedin-text-small {
+  font-size: var(--linkedin-font-size-sm);
+  line-height: 1.5;
+}
+
+.linkedin-text-xs {
+  font-size: var(--linkedin-font-size-xs);
+  line-height: 1.5;
+}
+
+/* Buttons */
+.linkedin-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--linkedin-border-radius-full);
+  font-size: var(--linkedin-font-size-md);
+  font-weight: var(--linkedin-font-weight-semibold);
+  padding: var(--linkedin-spacing-xs) var(--linkedin-spacing-lg);
+  cursor: pointer;
+  transition: background-color var(--linkedin-transition-normal), box-shadow var(--linkedin-transition-normal);
+  text-decoration: none;
+  background-color: transparent;
+}
+
+.linkedin-button-primary {
+  background-color: var(--linkedin-blue);
+  color: var(--linkedin-white);
+}
+
+.linkedin-button-primary:hover {
+  background-color: var(--linkedin-blue-hover);
+}
+
+.linkedin-button-primary:active {
+  background-color: var(--linkedin-blue-active);
+}
+
+.linkedin-button-secondary {
+  border: 1px solid var(--linkedin-blue);
+  color: var(--linkedin-blue);
+}
+
+.linkedin-button-secondary:hover {
+  background-color: rgba(10, 102, 194, 0.1);
+  border-color: var(--linkedin-blue-hover);
+}
+
+.linkedin-button-secondary:active {
+  background-color: rgba(10, 102, 194, 0.2);
+}
+
+.linkedin-button-tertiary {
+  color: var(--linkedin-gray-80);
+}
+
+.linkedin-button-tertiary:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.linkedin-button-tertiary:active {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.linkedin-button-outline {
+  border: 1px solid var(--linkedin-gray-50);
+  color: var(--linkedin-gray-80);
+}
+
+.linkedin-button-outline:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-color: var(--linkedin-gray-70);
+}
+
+.linkedin-button-danger {
+  color: #d11124;
+  border: 1px solid #d11124;
+}
+
+.linkedin-button-danger:hover {
+  background-color: rgba(209, 17, 36, 0.1);
+}
+
+/* Button Sizes */
+.linkedin-button-sm {
+  font-size: var(--linkedin-font-size-sm);
+  padding: var(--linkedin-spacing-xxs) var(--linkedin-spacing-sm);
+}
+
+.linkedin-button-lg {
+  padding: var(--linkedin-spacing-sm) var(--linkedin-spacing-xl);
+}
+
+/* Form Elements */
+.linkedin-input {
+  display: block;
+  width: 100%;
+  font-size: var(--linkedin-font-size-md);
+  line-height: 1.5;
+  color: var(--linkedin-gray-90);
+  padding: var(--linkedin-spacing-xs) var(--linkedin-spacing-sm);
+  border: 1px solid var(--linkedin-gray-50);
+  border-radius: var(--linkedin-border-radius-sm);
+  background-color: var(--linkedin-white);
+  transition: border-color var(--linkedin-transition-normal);
+}
+
+.linkedin-input:focus {
+  outline: none;
+  border-color: var(--linkedin-blue);
+  box-shadow: 0 0 0 1px var(--linkedin-blue);
+}
+
+.linkedin-input::placeholder {
+  color: var(--linkedin-gray-60);
+}
+
+.linkedin-input-label {
+  display: block;
+  margin-bottom: var(--linkedin-spacing-xxs);
+  font-size: var(--linkedin-font-size-sm);
+  font-weight: var(--linkedin-font-weight-semibold);
+  color: var(--linkedin-gray-80);
+}
+
+/* Card Component */
+.linkedin-card {
+  background-color: var(--linkedin-white);
+  border-radius: var(--linkedin-border-radius-md);
+  box-shadow: var(--linkedin-shadow-sm);
+  padding: var(--linkedin-spacing-lg);
+  margin-bottom: var(--linkedin-spacing-md);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.linkedin-card-compact {
+  padding: var(--linkedin-spacing-md);
+}
+
+.linkedin-card-tight {
+  padding: var(--linkedin-spacing-sm);
+}
+
+/* Link Styles */
+.linkedin-link {
+  color: var(--linkedin-blue);
+  text-decoration: none;
+  font-weight: var(--linkedin-font-weight-semibold);
+  transition: color var(--linkedin-transition-fast);
+}
+
+.linkedin-link:hover {
+  color: var(--linkedin-blue-hover);
+  text-decoration: underline;
+}
+
+/* Container Layouts */
+.linkedin-container {
+  width: 100%;
+  max-width: 1128px;
+  margin: 0 auto;
+  padding: 0 var(--linkedin-spacing-md);
+}
+
+.linkedin-container-sm {
+  max-width: 768px;
+}
+
+.linkedin-container-md {
+  max-width: 1024px;
+}
+
+.linkedin-main-container {
+  padding-top: var(--linkedin-spacing-md);
+  padding-bottom: var(--linkedin-spacing-xl);
+}
+
+/* Header Component */
+.linkedin-header {
+  background-color: var(--linkedin-white);
+  border-bottom: 1px solid var(--linkedin-gray-30);
+  padding: var(--linkedin-spacing-sm) 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.linkedin-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.linkedin-logo {
+  font-size: var(--linkedin-font-size-xl);
+  font-weight: var(--linkedin-font-weight-bold);
+  color: var(--linkedin-blue);
+  text-decoration: none;
+}
+
+.linkedin-nav {
+  display: flex;
+  gap: var(--linkedin-spacing-sm);
+}
+
+/* Footer Component */
+.linkedin-footer {
+  background-color: var(--linkedin-white);
+  border-top: 1px solid var(--linkedin-gray-30);
+  padding: var(--linkedin-spacing-lg) 0;
+  margin-top: auto;
+}
+
+/* Dialog/Modal */
+.linkedin-dialog {
+  background-color: var(--linkedin-white);
+  border-radius: var(--linkedin-border-radius-md);
+  box-shadow: var(--linkedin-shadow-lg);
+  padding: var(--linkedin-spacing-lg);
+  max-width: 560px;
+  width: 100%;
+  position: relative;
+}
+
+.linkedin-dialog-title {
+  font-size: var(--linkedin-font-size-lg);
+  font-weight: var(--linkedin-font-weight-semibold);
+  margin-bottom: var(--linkedin-spacing-md);
+  color: var(--linkedin-gray-90);
+}
+
+/* Dividers */
+.linkedin-divider {
+  height: 1px;
+  background-color: var(--linkedin-gray-30);
+  margin: var(--linkedin-spacing-md) 0;
+}
+
+/* Job Cards */
+.linkedin-job-card {
+  padding: var(--linkedin-spacing-md);
+  border-radius: var(--linkedin-border-radius-md);
+  border: 1px solid var(--linkedin-gray-30);
+  background-color: var(--linkedin-white);
+  transition: box-shadow var(--linkedin-transition-normal);
+}
+
+.linkedin-job-card:hover {
+  box-shadow: var(--linkedin-shadow-md);
+}
+
+.linkedin-job-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--linkedin-border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--linkedin-gray-10);
+}
+
+.linkedin-job-title {
+  font-size: var(--linkedin-font-size-md);
+  font-weight: var(--linkedin-font-weight-semibold);
+  color: var(--linkedin-gray-90);
+  margin-bottom: var(--linkedin-spacing-xxs);
+}
+
+.linkedin-job-company {
+  font-size: var(--linkedin-font-size-sm);
+  color: var(--linkedin-gray-80);
+  margin-bottom: var(--linkedin-spacing-xxs);
+}
+
+.linkedin-job-location {
+  font-size: var(--linkedin-font-size-sm);
+  color: var(--linkedin-gray-70);
+}
+
+/* Alert Components */
+.linkedin-alert {
+  padding: var(--linkedin-spacing-sm) var(--linkedin-spacing-md);
+  border-radius: var(--linkedin-border-radius-md);
+  margin-bottom: var(--linkedin-spacing-md);
+}
+
+.linkedin-alert-success {
+  background-color: var(--linkedin-success-bg);
+  border: 1px solid var(--linkedin-success-border);
+  color: var(--linkedin-success-text);
+}
+
+.linkedin-alert-error {
+  background-color: var(--linkedin-error-bg);
+  border: 1px solid var(--linkedin-error-border);
+  color: var(--linkedin-error-text);
+}
+
+/* Empty States */
+.linkedin-empty-state {
+  padding: var(--linkedin-spacing-xl);
+  text-align: center;
+  color: var(--linkedin-gray-70);
+}
+
+/* Loading States */
+.linkedin-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--linkedin-spacing-lg);
+}
+
+.linkedin-skeleton {
+  background: linear-gradient(90deg, var(--linkedin-gray-10) 25%, var(--linkedin-gray-30) 37%, var(--linkedin-gray-10) 63%);
+  background-size: 400% 100%;
+  animation: linkedin-skeleton-loading 1.4s ease infinite;
+  height: 16px;
+  border-radius: var(--linkedin-border-radius-sm);
+}
+
+@keyframes linkedin-skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .linkedin-container {
+    padding: 0 var(--linkedin-spacing-sm);
+  }
+  
+  .linkedin-button {
+    padding: var(--linkedin-spacing-xs) var(--linkedin-spacing-md);
+    font-size: var(--linkedin-font-size-sm);
+  }
+  
+  .linkedin-card {
+    padding: var(--linkedin-spacing-md);
+  }
+  
+  .linkedin-dialog {
+    padding: var(--linkedin-spacing-md);
+    width: calc(100% - var(--linkedin-spacing-md) * 2);
+    margin: 0 var(--linkedin-spacing-md);
+  }
+  
+  .linkedin-heading-large {
+    font-size: var(--linkedin-font-size-xl);
+  }
+  
+  .linkedin-heading-medium {
+    font-size: var(--linkedin-font-size-lg);
+  }
+  
+  .linkedin-job-logo {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Two-column layout used for main content area */
+.linkedin-two-column {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: var(--linkedin-spacing-md);
+}
+
+@media (max-width: 1024px) {
+  .linkedin-two-column {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tabs component */
+.linkedin-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--linkedin-gray-30);
+  margin-bottom: var(--linkedin-spacing-md);
+}
+
+.linkedin-tab {
+  padding: var(--linkedin-spacing-sm) var(--linkedin-spacing-md);
+  font-weight: var(--linkedin-font-weight-semibold);
+  color: var(--linkedin-gray-70);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.linkedin-tab:hover {
+  color: var(--linkedin-gray-90);
+}
+
+.linkedin-tab-active {
+  color: var(--linkedin-blue);
+  border-bottom: 2px solid var(--linkedin-blue);
+}

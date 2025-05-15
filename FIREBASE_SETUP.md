@@ -71,7 +71,7 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-JC69DM0NX6
 
 1. **users**: User profile information
    - UID (document ID): Firebase Auth UID
-   - Fields: name, email, linkedInConnected
+   - Fields: name, email
 
 2. **cvs**: Uploaded CV documents
    - Fields: userId, fileName, fileUrl, uploadDate, parsedData
@@ -96,7 +96,6 @@ The Firebase SDK is integrated in `src/utils/firebase.ts`, which initializes:
 Cloud Functions are deployed to handle:
 - Document generation with OpenAI
 - CV parsing
-- Job parsing from LinkedIn URLs
 - Usage tracking
 
 ## Deployment
@@ -116,12 +115,21 @@ firebase deploy --only hosting
 
 ## Required Additional Setup
 
-For the application to work properly, you need to:
+To prepare for production deployment, complete these steps:
 
-1. Add your OpenAI API key to the `.env.local` file
-2. Set up a LinkedIn Developer account and add credentials
-3. Deploy Firebase Functions
-4. Configure proper security rules for production
+1. Add your OpenAI API key to the Firebase Functions config:
+   ```bash
+   firebase functions:config:set openai.api_key="YOUR_API_KEY"
+   ```
+2. Deploy Firebase Functions:
+   ```bash
+   firebase deploy --only functions
+   ```
+3. Configure and deploy security rules:
+   ```bash
+   firebase deploy --only firestore:rules
+   firebase deploy --only storage:rules
+   ```
 
 ## Monitoring and Maintenance
 

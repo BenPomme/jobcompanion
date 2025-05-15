@@ -56,8 +56,13 @@ export async function getLinkedInAuthUrl() {
     throw new Error('LinkedIn client ID or redirect URI not configured');
   }
   
-  // Using just r_liteprofile since r_emailaddress might require additional verification
-  const scope = encodeURIComponent('r_liteprofile');
+  // Request all necessary scopes for profile, email, and positions
+  const scopes = [
+    'r_liteprofile',      // Basic profile
+    'r_emailaddress',     // Email address
+    'r_basicprofile',     // Extended profile info
+  ];
+  const scope = encodeURIComponent(scopes.join(' '));
   const state = Math.random().toString(36).substring(2);
   
   return `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=${scope}`;
@@ -116,71 +121,108 @@ export async function getProfileData(accessToken: string): Promise<LinkedInProfi
     }
     
     // Get profile picture
-    const pictureResponse = await axios.get(
-      `${LINKEDIN_API_URL}/me?projection=(profilePicture(displayImage~:playableStreams))`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    let pictureResponse;
+    try {
+      pictureResponse = await axios.get(
+        `${LINKEDIN_API_URL}/me?projection=(profilePicture(displayImage~:playableStreams))`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.log('Unable to fetch profile picture');
+      pictureResponse = { data: { profilePicture: null } };
+    }
     
     // Get positions (experience)
-    const positionsResponse = await axios.get(
-      `${LINKEDIN_API_URL}/positions?q=members&projection=(elements*(companyName,title,startDate,endDate,description))`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    let positionsResponse;
+    try {
+      positionsResponse = await axios.get(
+        `${LINKEDIN_API_URL}/positions?q=members&projection=(elements*(companyName,title,startDate,endDate,description))`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.log('Unable to fetch positions');
+      positionsResponse = { data: { elements: [] } };
+    }
     
     // Get education
-    const educationResponse = await axios.get(
-      `${LINKEDIN_API_URL}/educations?q=members&projection=(elements*(schoolName,degreeName,fieldOfStudy,startDate,endDate,activities,notes))`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    let educationResponse;
+    try {
+      educationResponse = await axios.get(
+        `${LINKEDIN_API_URL}/educations?q=members&projection=(elements*(schoolName,degreeName,fieldOfStudy,startDate,endDate,activities,notes))`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.log('Unable to fetch education');
+      educationResponse = { data: { elements: [] } };
+    }
     
     // Get skills
-    const skillsResponse = await axios.get(
-      `${LINKEDIN_API_URL}/skills?q=members&projection=(elements*(name))`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    let skillsResponse;
+    try {
+      skillsResponse = await axios.get(
+        `${LINKEDIN_API_URL}/skills?q=members&projection=(elements*(name))`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.log('Unable to fetch skills');
+      skillsResponse = { data: { elements: [] } };
+    }
     
-    // Combine all data
+    // Handle fields that might be missing or in different formats
+    // Get the localized fields with fallbacks for different formats and missing data
+    const getLocalizedField = (field: any, defaultValue = '') => {
+      if (!field) return defaultValue;
+      // Handle both old and new LinkedIn API response formats
+      if (field.localized?.en_US) return field.localized.en_US;
+      if (field.localized?.['en_US']) return field.localized['en_US'];
+      if (typeof field === 'string') return field;
+      return defaultValue;
+    };
+    
+    // Combine all data with safe fallbacks
     const profile: LinkedInProfile = {
-      id: profileResponse.data.id,
-      firstName: profileResponse.data.firstName.localized.en_US,
-      lastName: profileResponse.data.lastName.localized.en_US,
-      email: emailResponse.data.elements[0]?.['handle~']?.emailAddress || null,
-      headline: profileResponse.data.headline?.localized.en_US,
-      profilePicture:
-        pictureResponse.data.profilePicture?.displayImage?.elements[0]?.identifiers[0]?.identifier,
-      positions: positionsResponse.data.elements.map((position: any) => ({
-        companyName: position.companyName.localized.en_US,
-        title: position.title.localized.en_US,
-        startDate: position.startDate,
+      id: profileResponse.data.id || '',
+      firstName: getLocalizedField(profileResponse.data.firstName, 'Unknown'),
+      lastName: getLocalizedField(profileResponse.data.lastName, 'User'),
+      email: emailResponse.data.elements?.[0]?.['handle~']?.emailAddress || null,
+      headline: getLocalizedField(profileResponse.data.headline),
+      profilePicture: pictureResponse.data.profilePicture?.displayImage?.elements?.[0]?.identifiers?.[0]?.identifier || null,
+      positions: positionsResponse.data.elements?.map((position: any) => ({
+        companyName: getLocalizedField(position.companyName, position.company || 'Unknown Company'),
+        title: getLocalizedField(position.title, 'Position'),
+        startDate: position.startDate || { month: 1, year: new Date().getFullYear() },
         endDate: position.endDate,
-        description: position.description?.localized.en_US,
-      })),
-      educations: educationResponse.data.elements.map((education: any) => ({
-        schoolName: education.schoolName.localized.en_US,
-        degreeName: education.degreeName?.localized.en_US,
-        fieldOfStudy: education.fieldOfStudy?.localized.en_US,
+        description: getLocalizedField(position.description),
+        locationName: getLocalizedField(position.locationName),
+      })) || [],
+      educations: educationResponse.data.elements?.map((education: any) => ({
+        schoolName: getLocalizedField(education.schoolName, 'Unknown Institution'),
+        degreeName: getLocalizedField(education.degreeName),
+        fieldOfStudy: getLocalizedField(education.fieldOfStudy),
         startDate: education.startDate,
         endDate: education.endDate,
-        activities: education.activities?.localized.en_US,
-        notes: education.notes?.localized.en_US,
-      })),
-      skills: skillsResponse.data.elements.map((skill: any) => skill.name.localized.en_US),
+        activities: getLocalizedField(education.activities),
+        notes: getLocalizedField(education.notes),
+      })) || [],
+      skills: skillsResponse.data.elements?.map((skill: any) => 
+        getLocalizedField(skill.name, skill.skill || 'Skill')
+      ) || [],
     };
     
     return profile;

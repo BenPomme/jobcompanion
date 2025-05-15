@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { handleApiError } from '@/utils/error-handling';
+import cacheUtils from '@/utils/caching';
 
 export interface JobDetails {
   title?: string;
@@ -38,76 +40,65 @@ export async function parseJobPosting(jobText: string): Promise<JobDetails> {
 
 /**
  * Extract job information from LinkedIn job URL
+ * Uses Firebase Function to extract job data
+ * Implements caching to reduce duplicate API calls for the same URL
  */
-export async function extractJobFromLinkedInUrl(url: string): Promise<JobDetails> {
-  if (!url.includes('linkedin.com/jobs/')) {
-    throw new Error('Invalid LinkedIn job URL. Please provide a URL in the format: https://www.linkedin.com/jobs/view/...');
-  }
-  
-  try {
-    // Check if we're running in the client
-    if (typeof window === 'undefined') {
-      throw new Error('This function can only be called from the client side');
+export const extractJobFromLinkedInUrl = cacheUtils.withCache(
+  async function(url: string): Promise<JobDetails> {
+    if (!url.includes('linkedin.com/jobs/')) {
+      const error = new Error('Invalid LinkedIn job URL. Please provide a URL in the format: https://www.linkedin.com/jobs/view/...');
+      error.name = 'ValidationError';
+      throw error;
     }
     
-    // Check if we're running in the Firebase-hosted environment
-    const isFirebaseHosted = window.location.hostname !== 'localhost';
-    
-    if (isFirebaseHosted) {
-      // Use Firebase Function directly via api-client
-      const { api } = await import('@/utils/api-client');
+    try {
+      console.log(`Extracting job details from URL: ${url}`);
       
-      try {
-        const response = await api.post<{ jobDetails: string; url: string }>('linkedin/job', { url });
-        
-        // Parse the returned job details
-        const jobDetails = await parseJobPosting(response.jobDetails);
-        jobDetails.url = url;
-        
-        return jobDetails;
-      } catch (error) {
-        console.error('Error calling LinkedIn job API:', error);
-        
-        // Return a mock result for static deployment
-        return {
-          title: "Software Developer",
-          company: "LinkedIn Example Co.",
-          location: "Remote",
-          description: "This is a placeholder job from LinkedIn. Server-side processing is required for real data.",
-          url: url,
-          requirements: ["JavaScript", "React", "Node.js"],
-          responsibilities: ["Develop web applications", "Work with team"],
-          jobType: "Full-time"
-        };
+      // Use the Firebase Function for job extraction
+      const API_URL = 'https://us-central1-cvjob-3a4ed.cloudfunctions.net/jobExtract';
+      
+      const response = await axios.post(API_URL, { url });
+      
+      if (!response.data || !response.data.job) {
+        throw new Error('Invalid response from job extraction service');
       }
-    } else {
-      // Handle local development with mock data in static build
-      // In a real app, we would use a proper API here
-      console.warn('Using mock data for LinkedIn job parsing in static build');
       
-      return {
-        title: "Software Developer",
-        company: "LinkedIn Example Co.",
-        location: "Remote",
-        description: "This is a placeholder job from LinkedIn. Server-side processing is required for real data.",
-        url: url,
-        requirements: ["JavaScript", "React", "Node.js"],
-        responsibilities: ["Develop web applications", "Work with team"],
-        jobType: "Full-time"
-      };
+      return response.data.job;
+    } catch (error: any) {
+      // Convert to standardized error format
+      const apiError = handleApiError(error);
+      
+      // For validation errors, throw directly (don't cache these)
+      if (error.name === 'ValidationError') {
+        throw error;
+      }
+      
+      // For other errors, wrap in our standardized format
+      console.error('Error extracting job from LinkedIn URL:', apiError);
+      const enhancedError = new Error(
+        'Failed to extract job details from LinkedIn. Please paste the job description manually.'
+      );
+      throw enhancedError;
     }
-  } catch (error) {
-    console.error('Error extracting job from LinkedIn URL:', error);
-    
-    // Return mock data on error for static build
-    return {
-      title: "Software Developer (Error)",
-      company: "Example Company",
-      location: "Remote",
-      description: "An error occurred while fetching this job. Please try again later.",
-      url: url,
-      requirements: ["JavaScript", "React", "Node.js"],
-      jobType: "Full-time"
-    };
+  },
+  'linkedin-job-extract',
+  { expiresIn: 3600 * 24 } // Cache for 24 hours
+);
+
+/**
+ * Clear job extraction cache for a specific URL or all URLs
+ */
+export function clearJobExtractionCache(url?: string): void {
+  if (url) {
+    const cacheKey = cacheUtils.generateCacheKey('linkedin-job-extract', { url });
+    cacheUtils.clearCache(cacheKey);
+  } else {
+    // Clear all job extraction cache entries
+    const allStats = cacheUtils.getCacheStats();
+    Object.keys(allStats.keys).forEach(key => {
+      if (key.startsWith('linkedin-job-extract:')) {
+        cacheUtils.clearCache(key);
+      }
+    });
   }
 }

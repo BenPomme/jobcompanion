@@ -1,8 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { parseCV } from '@/services/cv-parser';
 import axios from 'axios';
-import { storage } from '@/utils/firebase';
-import { ref, getDownloadURL } from 'firebase/storage';
 
 type RequestData = {
   fileUrl: string;
